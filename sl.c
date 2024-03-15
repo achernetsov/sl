@@ -1,5 +1,5 @@
 /*========================================
- *    sl.c: SL version 5.05
+ *    sl.c: SL version 5.06
  *        Copyright 1993,1998,2014-2015,2019,2024
  *                  Toyoda Masashi
  *                  (mtoyoda@acm.org)
