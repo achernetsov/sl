@@ -1,11 +1,37 @@
 /*========================================
- *    sl.h: SL version 5.02
+ *    sl.h: SL version 5.06
  *	Copyright 1993,2002,2014
  *                Toyoda Masashi
  *		  (mtoyoda@acm.org)
- *	Last Modified: 2014/06/03
+ *	Last Modified: 2024/03/16
  *========================================
  */
+
+#define CATHEIGHT    8
+#define CATFUNNEL  	 8
+#define CATPATTERNS	 6
+
+#define CAT001  "                      /\\"
+#define CAT0  "  |\\                 | |"
+
+#define CAT002  "                    /\\ "
+#define CAT02  "  |\\                \\ \\ "
+
+#define CAT1  " /, ~\\               | |"
+#define CAT12  " /, ~\\               \\ \\"
+
+#define CAT2  "X     `-.....-------./ /"
+#define CAT3  " ~-. ~  ~              |"
+#define CAT4  "    \\             /    |"
+#define CAT5  "     \\  /_     ___\\   /"
+
+#define CATDEL   "                     "
+
+#define CATLWHL11 "     / / /~~~~~   \\ \\ \\"
+#define CATLWHL12 "    (_/ (_/     \\ )\\) "
+
+#define CATLWHL21 "     \\ \\ \\~~~~~   / // /"
+#define CATLWHL22 "      \\ )  \\ )    (_/(_/ "
 
 #define TGVHEIGHT	8
 #define TGVLENGTH	114

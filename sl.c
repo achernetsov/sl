@@ -1,12 +1,14 @@
 /*========================================
  *    sl.c: SL version 5.05
- *        Copyright 1993,1998,2014-2015,2019
+ *        Copyright 1993,1998,2014-2015,2019,2024
  *                  Toyoda Masashi
  *                  (mtoyoda@acm.org)
- *        Last Modified: 2019/03/19
+ *        Last Modified: 2024/03/16
  *========================================
  */
-/* sl version 5.05 : by eyJhb 2019-08-14
+/* sl version 5.06 : by Artyom Chernetsov and Katya Nevskaya 2024-03-16
+ * - Cat version
+ * sl version 5.05 : by eyJhb 2019-08-14
  * - Merged pull request from cosmo-ray adding orange TGV (-G)
  * sl version 5.04 : by eyJhb 2019-03-19
  * - Merged pull request from EverNine allowing to specify the number of cars
@@ -55,13 +57,14 @@
 #include <unistd.h>
 #include "sl.h"
 
-#define VERSION "5.04"
+#define VERSION "5.06"
 
 void add_smoke(int y, int x);
 void add_man(int y, int x);
 int add_C51(int x);
 int add_D51(int x);
 int add_TGV(int x);
+int add_CAT(int x);
 int add_sl(int x);
 void option(char *str);
 int my_mvaddstr(int y, int x, char *str);
@@ -75,6 +78,7 @@ int FLY       = 0;
 int LOGO      = 0;
 int WIND      = 0;
 int TGV       = 0;
+int CAT       = 0;
 
 int my_mvaddstr(int y, int x, char *str)
 {
@@ -99,6 +103,7 @@ void option(char *str)
             case 'F': FLY      = 1; break;
             case 'l': LOGO     = 1; break;
             case 'w': WIND     = 200; break;
+            case 'C': CAT      = 1; break;
             case 'v': 
               printf("Version: %s, last updated: 2019-03-19\n", VERSION);
               exit(0);
@@ -161,6 +166,9 @@ int main(int argc, char *argv[])
         }
         else if (TGV == 1) {
             if (add_TGV(x) == ERR) break;
+        }
+        else if (CAT == 1) {
+            if (add_CAT(x) == ERR) break;
         }
         else {
             if (add_D51(x) == ERR) break;
@@ -304,6 +312,38 @@ int add_TGV(int x)
     return OK;
 }
 
+int add_CAT(int x)
+{
+    static char *sl[CATPATTERNS][CATHEIGHT + 1]
+        = {{CAT001, CAT0, CAT1, CAT2, CAT3, CAT4, CATLWHL11, CATLWHL12, CATDEL},
+           {CAT002, CAT02, CAT12, CAT2, CAT3, CAT4, CATLWHL21, CATLWHL22, CATDEL},
+           {CAT001, CAT0, CAT1, CAT2, CAT3, CAT4, CATLWHL11, CATLWHL12, CATDEL},
+           {CAT002, CAT02, CAT12, CAT2, CAT3, CAT4, CATLWHL21, CATLWHL22, CATDEL},
+           {CAT001, CAT0, CAT1, CAT2, CAT3, CAT4, CATLWHL11, CATLWHL12, CATDEL},
+           {CAT002, CAT02, CAT12, CAT2, CAT3, CAT4, CATLWHL21, CATLWHL22, CATDEL}};
+
+    if (NUMBER < 0)
+        NUMBER = 2;
+
+    int i, j, y, py = 0;
+    int CATLENGTH = 42 + 21*NUMBER + 100;
+
+    if (x < - CATLENGTH)  return ERR;
+    y = LINES / 2 - 3;
+
+    if (FLY == 1) {
+        y = (x / 6) + LINES - (COLS / 6) - CATHEIGHT;
+        py = 2;
+    }
+    for (i = 0; i <= CATHEIGHT; ++i) {
+        my_mvaddstr(y + i, x, sl[(CATLENGTH + x) / 3 % CATPATTERNS][i]);
+        my_mvaddstr(y + i + py, x + 24, CATDEL);
+    }
+
+    add_meow(y - 1, x + CATFUNNEL);
+    return OK;
+}
+
 int add_C51(int x)
 {
     static char *c51[C51PATTERNS][C51HEIGHT + 1]
@@ -377,6 +417,51 @@ void add_smoke(int y, int x)
            {"(@@@)", "(@@@@)", "(@@@@)", "(@@@)", "(@@)",
             "(@@)" , "(@)"   , "(@)"   , "@@"   , "@@"  ,
             "@"    , "@"     , "@"     , "@"    , "@"   ,
+            " "                                          }};
+    static char *Eraser[SMOKEPTNS]
+        =  {"     ", "      ", "      ", "     ", "    ",
+            "    " , "   "   , "   "   , "  "   , "  "  ,
+            " "    , " "     , " "     , " "    , " "   ,
+            " "                                          };
+    static int dy[SMOKEPTNS] = { 2,  1, 1, 1, 0, 0, 0, 0, 0, 0,
+                                 0,  0, 0, 0, 0, 0             };
+    static int dx[SMOKEPTNS] = {-2, -1, 0, 1, 1, 1, 1, 1, 2, 2,
+                                 2,  2, 2, 3, 3, 3             };
+    int i;
+
+    if (DISCO && (x + INT_MAX/2) % 4 == 2)
+        attron(COLOR_PAIR((x + INT_MAX/2) / 16 % 4 + 1));
+    if (x % 4 == 0) {
+        for (i = 0; i < sum; ++i) {
+            my_mvaddstr(S[i].y, S[i].x, Eraser[S[i].ptrn]);
+            S[i].y    -= dy[S[i].ptrn];
+            S[i].x    += dx[S[i].ptrn];
+            S[i].ptrn += (S[i].ptrn < SMOKEPTNS - 1) ? 1 : 0;
+            my_mvaddstr(S[i].y, S[i].x, Smoke[S[i].kind][S[i].ptrn]);
+        }
+        my_mvaddstr(y, x, Smoke[sum % 2][0]);
+        S[sum].y = y;    S[sum].x = x;
+        S[sum].ptrn = 0; S[sum].kind = sum % 2;
+        sum ++;
+    }
+}
+
+void add_meow(int y, int x)
+#define SMOKEPTNS        16
+{
+    static struct smokes {
+        int y, x;
+        int ptrn, kind;
+    } S[1000];
+    static int sum = 0;
+    static char *Smoke[2][SMOKEPTNS]
+        = {{"(   )", "(    )", "(    )", "(   )", "(  )",
+            "(  )" , "( )"   , "( )"   , "()"   , "()"  ,
+            "r"    , "r"     , "r"     , "r"    , "r"   ,
+            " "                                          },
+           {"(MEW)", "(MEOW)", "(MRRR)", "(MR!)", "(MR)",
+            "(mr)" , "(r)"   , "(r)"   , "mr"   , "rr"  ,
+            "r"    , "!"     , "."     , "!"    , "."   ,
             " "                                          }};
     static char *Eraser[SMOKEPTNS]
         =  {"     ", "      ", "      ", "     ", "    ",
