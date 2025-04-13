@@ -312,6 +312,51 @@ int add_TGV(int x)
     return OK;
 }
 
+void add_meow(int y, int x)
+#define SMOKEPTNS        16
+{
+    static struct smokes {
+        int y, x;
+        int ptrn, kind;
+    } S[1000];
+    static int sum = 0;
+    static char *Smoke[2][SMOKEPTNS]
+        = {{"(   )", "(    )", "(    )", "(   )", "(  )",
+            "(  )" , "( )"   , "( )"   , "()"   , "()"  ,
+            "r"    , "r"     , "r"     , "r"    , "r"   ,
+            " "                                          },
+           {"(MEW)", "(MEOW)", "(MRRR)", "(MR!)", "(MR)",
+            "(mr)" , "(r)"   , "(r)"   , "mr"   , "rr"  ,
+            "r"    , "!"     , "."     , "!"    , "."   ,
+            " "                                          }};
+    static char *Eraser[SMOKEPTNS]
+        =  {"     ", "      ", "      ", "     ", "    ",
+            "    " , "   "   , "   "   , "  "   , "  "  ,
+            " "    , " "     , " "     , " "    , " "   ,
+            " "                                          };
+    static int dy[SMOKEPTNS] = { 2,  1, 1, 1, 0, 0, 0, 0, 0, 0,
+                                 0,  0, 0, 0, 0, 0             };
+    static int dx[SMOKEPTNS] = {-2, -1, 0, 1, 1, 1, 1, 1, 2, 2,
+                                 2,  2, 2, 3, 3, 3             };
+    int i;
+
+    if (DISCO && (x + INT_MAX/2) % 4 == 2)
+        attron(COLOR_PAIR((x + INT_MAX/2) / 16 % 4 + 1));
+    if (x % 4 == 0) {
+        for (i = 0; i < sum; ++i) {
+            my_mvaddstr(S[i].y, S[i].x, Eraser[S[i].ptrn]);
+            S[i].y    -= dy[S[i].ptrn];
+            S[i].x    += dx[S[i].ptrn];
+            S[i].ptrn += (S[i].ptrn < SMOKEPTNS - 1) ? 1 : 0;
+            my_mvaddstr(S[i].y, S[i].x, Smoke[S[i].kind][S[i].ptrn]);
+        }
+        my_mvaddstr(y, x, Smoke[sum % 2][0]);
+        S[sum].y = y;    S[sum].x = x;
+        S[sum].ptrn = 0; S[sum].kind = sum % 2;
+        sum ++;
+    }
+}
+
 int add_CAT(int x)
 {
     static char *sl[CATPATTERNS][CATHEIGHT + 1]
@@ -417,51 +462,6 @@ void add_smoke(int y, int x)
            {"(@@@)", "(@@@@)", "(@@@@)", "(@@@)", "(@@)",
             "(@@)" , "(@)"   , "(@)"   , "@@"   , "@@"  ,
             "@"    , "@"     , "@"     , "@"    , "@"   ,
-            " "                                          }};
-    static char *Eraser[SMOKEPTNS]
-        =  {"     ", "      ", "      ", "     ", "    ",
-            "    " , "   "   , "   "   , "  "   , "  "  ,
-            " "    , " "     , " "     , " "    , " "   ,
-            " "                                          };
-    static int dy[SMOKEPTNS] = { 2,  1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                 0,  0, 0, 0, 0, 0             };
-    static int dx[SMOKEPTNS] = {-2, -1, 0, 1, 1, 1, 1, 1, 2, 2,
-                                 2,  2, 2, 3, 3, 3             };
-    int i;
-
-    if (DISCO && (x + INT_MAX/2) % 4 == 2)
-        attron(COLOR_PAIR((x + INT_MAX/2) / 16 % 4 + 1));
-    if (x % 4 == 0) {
-        for (i = 0; i < sum; ++i) {
-            my_mvaddstr(S[i].y, S[i].x, Eraser[S[i].ptrn]);
-            S[i].y    -= dy[S[i].ptrn];
-            S[i].x    += dx[S[i].ptrn];
-            S[i].ptrn += (S[i].ptrn < SMOKEPTNS - 1) ? 1 : 0;
-            my_mvaddstr(S[i].y, S[i].x, Smoke[S[i].kind][S[i].ptrn]);
-        }
-        my_mvaddstr(y, x, Smoke[sum % 2][0]);
-        S[sum].y = y;    S[sum].x = x;
-        S[sum].ptrn = 0; S[sum].kind = sum % 2;
-        sum ++;
-    }
-}
-
-void add_meow(int y, int x)
-#define SMOKEPTNS        16
-{
-    static struct smokes {
-        int y, x;
-        int ptrn, kind;
-    } S[1000];
-    static int sum = 0;
-    static char *Smoke[2][SMOKEPTNS]
-        = {{"(   )", "(    )", "(    )", "(   )", "(  )",
-            "(  )" , "( )"   , "( )"   , "()"   , "()"  ,
-            "r"    , "r"     , "r"     , "r"    , "r"   ,
-            " "                                          },
-           {"(MEW)", "(MEOW)", "(MRRR)", "(MR!)", "(MR)",
-            "(mr)" , "(r)"   , "(r)"   , "mr"   , "rr"  ,
-            "r"    , "!"     , "."     , "!"    , "."   ,
             " "                                          }};
     static char *Eraser[SMOKEPTNS]
         =  {"     ", "      ", "      ", "     ", "    ",
